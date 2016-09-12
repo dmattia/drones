@@ -1,2 +1,10 @@
 # Ignore vim temporary files
 *.sw[op]
+
+# Ignore MavProxy Files
+mav.parm
+mav.tlog
+mav.tlog.raw
+
+# Ignore Python Compiled Files
+*.pyc
