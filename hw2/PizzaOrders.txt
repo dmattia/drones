@@ -1,0 +1,6 @@
+Pizza Head, Stenson Remick Hall, Base, 41.699723,-86.236343
+Professor David Lodge, Duck Island, Veggie Pizza, 41.705078, -86.240525
+Brian Kelley, Stadium, Meat Lovers Pizza, 41.698490, -86.233953
+Rev. Thomas Jones, Basilica Parish Room, Cheese Pizza, 41.702616, -86.239682
+Professor Kevin Bowyer, Fitzpatrick Hall, Sausage and Mushroom Pizza, 41.699488, -86.237184
+Tom Blicher, Ice Arena Manager, Sausage and Anchovies Pizza, 41.693854, -86.230788

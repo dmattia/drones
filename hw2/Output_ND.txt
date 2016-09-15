@@ -1,0 +1,140 @@
+Flight location order:
+Stenson Remick Hall
+Duck Island
+Basilica Parish Room
+Fitzpatrick Hall
+Ice Arena Manager
+Stadium
+Stenson Remick Hall
+Connecting to vehicle on: 127.0.0.1:14550
+Vehicle is armable
+Waiting for vehicle to arm
+Waiting for vehicle to arm
+Waiting for vehicle to arm
+Waiting for vehicle to arm
+Waiting for vehicle to arm
+Waiting for vehicle to arm
+Vehicle is armed
+Altitude: 0.0
+Altitude: 1.1
+Altitude: 6.51
+Altitude: 13.17
+Altitude: 19.9
+Altitude: 26.61
+Altitude: 33.84
+Altitude: 41.02
+Altitude: 48.13
+Altitude: 55.19
+Altitude: 62.77
+Altitude: 69.26
+Altitude: 75.74
+Altitude: 82.22
+Altitude: 88.75
+Delivering to Pizza Head @ Stenson Remick Hall
+Altitude check cleared, current altitude is 95.31 meters
+Reached destination
+Delivering to Professor David Lodge @ Duck Island
+Altitude check cleared, current altitude is 95.86 meters
+Remaining: 756.408734342
+Remaining: 738.158648102
+Remaining: 702.357441758
+Remaining: 664.915600386
+Remaining: 626.152118103
+Remaining: 589.427108095
+Remaining: 550.398001702
+Remaining: 512.550155351
+Remaining: 474.681985992
+Remaining: 437.046037491
+Remaining: 398.276555656
+Remaining: 360.750207896
+Remaining: 323.194305411
+Remaining: 284.426982093
+Remaining: 246.710978881
+Remaining: 209.017736116
+Remaining: 171.478258948
+Remaining: 134.158197697
+Remaining: 97.9610746132
+Remaining: 59.445867937
+Remaining: 21.9749204383
+Reached destination
+Delivering to Rev. Thomas Jones @ Basilica Parish Room
+Altitude check cleared, current altitude is 25.0 meters
+Remaining: 290.736761968
+Remaining: 270.669458997
+Remaining: 229.105775627
+Remaining: 188.497912853
+Remaining: 150.774157453
+Remaining: 109.61129611
+Remaining: 69.8593653202
+Remaining: 30.065177484
+Reached destination
+Delivering to Professor Kevin Bowyer @ Fitzpatrick Hall
+Altitude check cleared, current altitude is 24.97 meters
+Remaining: 445.670962132
+Remaining: 421.926561309
+Remaining: 381.679656849
+Remaining: 339.732662765
+Remaining: 297.970128552
+Remaining: 257.64700405
+Remaining: 213.5687379
+Remaining: 173.19160971
+Remaining: 130.396476816
+Remaining: 88.8512961352
+Remaining: 47.0591912629
+Reached destination
+Delivering to Tom Blicher @ Ice Arena Manager
+Altitude check cleared, current altitude is 25.01 meters
+Remaining: 955.203534075
+Remaining: 919.2137921
+Remaining: 875.9487783
+Remaining: 833.110618868
+Remaining: 790.140412345
+Remaining: 744.603284136
+Remaining: 701.569598094
+Remaining: 657.354207254
+Remaining: 612.771100938
+Remaining: 568.692759251
+Remaining: 524.545570193
+Remaining: 480.444170645
+Remaining: 435.244349142
+Remaining: 391.496972217
+Remaining: 346.313173578
+Remaining: 302.574164595
+Remaining: 258.769302435
+Remaining: 215.057699802
+Remaining: 169.951202114
+Remaining: 126.078441469
+Remaining: 83.5073644741
+Remaining: 37.728771755
+Reached destination
+Delivering to Brian Kelley @ Stadium
+Altitude check cleared, current altitude is 25.0 meters
+Remaining: 624.490838699
+Remaining: 609.330551093
+Remaining: 569.379701947
+Remaining: 525.723661052
+Remaining: 482.858192967
+Remaining: 440.041202902
+Remaining: 396.017682308
+Remaining: 354.53560649
+Remaining: 310.517942811
+Remaining: 267.686343594
+Remaining: 226.396155118
+Remaining: 182.375170359
+Remaining: 139.636388023
+Remaining: 96.9926292447
+Remaining: 54.1729881762
+Remaining: 10.4670701599
+Reached destination
+Delivering to Pizza Head @ Stenson Remick Hall
+Altitude check cleared, current altitude is 24.99 meters
+Remaining: 298.296051014
+Remaining: 276.992092208
+Remaining: 230.180811804
+Remaining: 180.816834394
+Remaining: 130.018495918
+Remaining: 81.0485531187
+Remaining: 31.9131747534
+Reached destination
+Cleaning up VehicleController object
+Exiting
