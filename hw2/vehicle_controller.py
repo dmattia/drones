@@ -62,10 +62,13 @@ class VehicleController(object):
   def __exit__(self, exc_type, exc_value, traceback):
     """ Cleanup at the end of a "with" block.
     """
+    print "Returning to launch"
+    vehicle.mode = VehicleMode("RTL")
+
     print "Cleaning up VehicleController object"
     self.vehicle.close()
     if self.sitl is not None:
-      sitl.stop()
+      self.sitl.stop()
     print "Exiting"
 
   @property
