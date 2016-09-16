@@ -88,7 +88,7 @@ class VehicleController(object):
     """ Arms the vehicle.
     """
     while not self.vehicle.is_armable:
-      print "Waiting for vehicle to arm"
+      print "Waiting for vehicle to become armable"
       sleep(1)
     print "Vehicle is armable"
   
