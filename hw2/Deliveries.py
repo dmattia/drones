@@ -1,3 +1,15 @@
+"""
+  File Name: Deliveries.py
+  Author: David Mattia
+  Python Version: 2.7
+  Description: This file contains two parts:
+    1) The DeliverySpot class, explained in its docstring.
+    2) Executable code for when this file is ran. This code reads in text from
+       a file, parses it into DeliverySpot objects, computes the shortest path
+       from the base to all other spots and back to the base, and moves a
+       copter drone along this path. 
+"""
+
 from argparse import ArgumentParser
 from vehicle_controller import VehicleController
 from dronekit import LocationGlobal

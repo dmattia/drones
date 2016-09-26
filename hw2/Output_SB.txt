@@ -335,5 +335,6 @@ Remaining: 124.508798561
 Remaining: 72.0300727863
 Remaining: 17.9939217135
 Reached destination
+Returning to launch
 Cleaning up VehicleController object
 Exiting
