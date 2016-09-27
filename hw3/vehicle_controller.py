@@ -20,11 +20,11 @@ class VehicleController(object):
         try:
           if self.altitude >= min_altitude:
             print "Altitude check cleared, current altitude is "\
-                + str(altitude) + " meters"
+                + str(self.altitude) + " meters"
             return function(self, *args, **kwargs)
           else:
             print "Could not run " + function.__name__
-            print "The current altitude of " + str(altitude)\
+            print "The current altitude of " + str(self.altitude)\
                 + " does not meet the requirement of " + str(min_altitude)
         except AttributeError:
           print "Could not find altitude of vehicle"  
@@ -108,10 +108,24 @@ class VehicleController(object):
     dlong = destination.lon - self.location.lon
     return sqrt(dlat**2 + dlong**2) * 1.113195e5
 
-  def is_close_to(self, location, max_meters=10):
+  def is_close_to(self, location, max_meters=5):
     """ Returns if the vehicle is within @max_meters of @location
     """
     return self.get_distance_in_meters_to(location) < max_meters
+
+  @require_altitude(10)
+  def explore(self, flyable_area):
+    to_explore = flyable_area
+    while to_explore.area_in_meters > 5:
+      self.follow_path(to_explore.hull_vertices)
+      to_explore = to_explore.reduce_by_size(num_meters=10)
+
+  def follow_path(self, locationGlobals):
+    """ Follows a path, maintaining altitude
+    """
+    for location in locationGlobals:
+      print "Flying to location: " + str(location)
+      self.fly_to(location, speed=15)
 
   @require_altitude(10)
   def fly_to(self, destination, speed=15):
@@ -120,12 +134,15 @@ class VehicleController(object):
     Args:
       destination: A LocationGlobal indicating the destination coordinate.
     """
+    if destination.alt is None:
+      destination.alt = self.altitude
     self.vehicle.arispeed = speed
     self.vehicle.simple_goto(destination)
 
     while not self.is_close_to(destination):
       print "Remaining: " + str(self.get_distance_in_meters_to(destination))
-      sleep(8)
+      print "Altitude: " + str(self.altitude)
+      sleep(2)
 
     print "Reached destination"
 
