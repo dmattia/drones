@@ -1,0 +1,39 @@
+trial1
+1m51.587s
+Distance from box in meters: 4.76713980139
+
+trial2
+6m38s
+Distance from box in meters: 4.76702282232
+
+trial3
+5m5.572s
+Distance from box in meters: 4.93858520428
+
+trial4
+7m32.779s
+Distance from box in meters: 4.60976993199
+
+trial5
+3m15.650s
+Distance from box in meters: 4.65919651946
+
+trial6
+3m43.227s
+Distance from box in meters: 4.88469407851
+
+trial7
+6m4.557s
+Distance from box in meters: 4.7111301475
+
+trial8
+2m56.344s
+Distance from box in meters: 4.72058999364
+
+trial9
+2m18.034s
+Distance from box in meters: 4.18302185111
+
+trial10
+2m59.229s
+Distance from box in meters: 4.6612174475
