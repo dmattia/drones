@@ -35,6 +35,7 @@ class VehicleController(object):
   def __init__(self, connection_string=None):
     self.sitl = None
     self.connection_string = connection_string
+    self.end_conditions = []
 
     if self.connection_string is None:
       self.sitl = dronekit_sitl.start_default()
@@ -49,8 +50,8 @@ class VehicleController(object):
     return self
 
   def __exit__(self, exc_type, exc_value, traceback):
-    print "Returning to Launch"
-    if self.vehicle.mode != "RTL":
+    if self.vehicle.mode.name != "RTL" and self.vehicle.mode.name != "LAND":
+      print "Returning to Launch"
       self.set_mode("RTL")
 
     print "Cleaning up VehicleController object"
@@ -70,6 +71,18 @@ class VehicleController(object):
   def altitude(self):
     return self.vehicle.location.global_relative_frame.alt
 
+  @property
+  def end_conditions_met(self):
+    """ Returns True if any end condition returns true
+    """
+    for end_condition in self.end_conditions:
+      if end_condition():
+        return True
+    return False
+
+  def add_end_condition(self, new_end_condition):
+    self.end_conditions.append(new_end_condition)
+
   def set_mode(self, mode_name):
     self.vehicle.mode = VehicleMode(mode_name)
 
@@ -77,7 +90,7 @@ class VehicleController(object):
     """ Arms the vehicle
     """
     while not self.vehicle.is_armable:
-      print "Waiting for vehicle to arm"
+      print "Waiting for vehicle to become armable"
       sleep(1)
     print "Vehicle is armable"
   
@@ -113,19 +126,13 @@ class VehicleController(object):
     """
     return self.get_distance_in_meters_to(location) < max_meters
 
-  @require_altitude(10)
-  def explore(self, flyable_area):
-    to_explore = flyable_area
-    while to_explore.area_in_meters > 5:
-      self.follow_path(to_explore.hull_vertices)
-      to_explore = to_explore.reduce_by_size(num_meters=10)
-
   def follow_path(self, locationGlobals):
     """ Follows a path, maintaining altitude
     """
     for location in locationGlobals:
-      print "Flying to location: " + str(location)
-      self.fly_to(location, speed=15)
+      if not self.end_conditions_met:
+        print "Flying to location: " + str(location)
+        self.fly_to(location, speed=15)
 
   @require_altitude(10)
   def fly_to(self, destination, speed=15):
@@ -139,15 +146,20 @@ class VehicleController(object):
     self.vehicle.arispeed = speed
     self.vehicle.simple_goto(destination)
 
-    while not self.is_close_to(destination):
-      print "Remaining: " + str(self.get_distance_in_meters_to(destination))
-      print "Altitude: " + str(self.altitude)
-      sleep(2)
+    while not self.is_close_to(destination) and not self.end_conditions_met:
+      #print "Remaining: " + str(self.get_distance_in_meters_to(destination))
+      #print "Altitude: " + str(self.altitude)
+      sleep(0.2)
 
-    print "Reached destination"
+    if self.is_close_to(destination):
+      print "Reached destination"
+    else:
+      self.set_mode("LAND")
+      print "An end condition was reached. Stopping"
 
   def mode_change_callback(self, *args, **kwargs):
+    acceptable_modes = ["GUIDED", "LAND", "RTL"]
     print "Vehicle Mode Updated. New Value: " + self.vehicle.mode.name
-    if self.vehicle.mode != "GUIDED":
-      print "Exiting, vehicle is no longer in guided mode"
+    if self.vehicle.mode.name not in acceptable_modes:
+      print "Exiting, vehicle is no longer in acceptable mode"
       self.__exit__(None, None, None)

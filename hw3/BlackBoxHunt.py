@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from vehicle_controller import VehicleController
 from dronekit import LocationGlobal
-from HideBlackBox import hideBlackBox, distanceToBlackBox
+from HideBlackBox import hideBlackBox, distanceToBlackBox, get_distance_metres
 from spatial import FlyableArea
 
 if __name__ == "__main__":
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     float(hiddenCoords[2]))
   print "Hidden Location: " + str(hiddenLocation)
 
-  vehicle_height = 100
+  vehicle_height = 20
   
   # Create the flying zone
   right = -86.239092
@@ -33,12 +33,22 @@ if __name__ == "__main__":
   lower_left = LocationGlobal(left, bottom)
   lower_right = LocationGlobal(right, bottom)
 
-  flyableArea = FlyableArea([upper_left, upper_right, lower_left, lower_right])
+  flyable_area = FlyableArea([upper_left, upper_right, lower_left, lower_right])
 
   # Start the copter controller
   with VehicleController(args.connect) as vehicle_controller:
-    print distanceToBlackBox(vehicle_controller.location, hiddenLocation)
     vehicle_controller.arm()
     vehicle_controller.takeoff_to(vehicle_height)
 
-    vehicle_controller.explore(flyableArea)
+    def found_box():
+      dist = get_distance_metres(vehicle_controller.location, hiddenLocation)
+      print "Distance from box in meters: " + str(dist)
+      return dist <= 5
+
+    vehicle_controller.add_end_condition(found_box)
+    to_explore = flyable_area.reduce_by_size(num_meters=5)
+    while to_explore.area_in_meters > 5 and not vehicle_controller.end_conditions_met:
+      vehicle_controller.follow_path(to_explore.hull_vertices)
+      to_explore = to_explore.reduce_by_size(num_meters=10)
+
+    print "Found the box"
