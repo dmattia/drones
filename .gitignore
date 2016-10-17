@@ -8,3 +8,6 @@ mav.tlog.raw
 
 # Ignore Python Compiled Files
 *.pyc
+
+# Mac icon files
+.DS_Store
