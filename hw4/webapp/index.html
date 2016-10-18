@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Drone Jobs</title>
+        <script src="elm.js"></script>
+        <!--link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">-->
+    </head>
+    
+    <body>
+      <div id="elm-app"></div>
+    </body>
+    
+    <script>
+        var mainDiv = document.getElementById("elm-app")
+        var app = Elm.Clicker.embed(mainDiv);
+
+        app.ports.value.subscribe(function(value) {
+          console.log("Result: " + value);
+        });
+    </script>
+</html>
