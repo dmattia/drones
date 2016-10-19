@@ -3,72 +3,63 @@ port module Clicker exposing (..)
 import Html exposing (div, button, text)
 import Html.App as App
 import Html.Events exposing (onClick)
-import Html.Attributes exposing (disabled)
+import Html.Attributes exposing (disabled, id)
 
 type Msg 
-  = Increment Int
-  | Decrement Int
+  = PanMap Float Float
 
 type alias Model =
-  { value : Int
-  , min : Int
-  , max : Int
+  { map : Map
   }
 
-port value : Int -> Cmd msg
+type alias Map =
+  { latitude : Float
+  , longitude : Float
+  , zoomLevel : Int
+  }
+
+port mapData : Map -> Cmd msg
 
 main =
   App.program
     { init = (model, Cmd.none)
     , view = view
     , update = update
-    , subscriptions = subscriptions
+    , subscriptions = \_ -> Sub.none
     }
     
 model =
-  { value = 0
-  , min = 0
-  , max = 20
+  { map = startMap
+  }
+
+startMap =
+  { latitude = 48.869317,
+    longitude = 2.30,
+    zoomLevel = 8
   }
 
 valueButton caption action isDisabled =
   button [ disabled isDisabled, onClick action ] [ text caption ]
 
-pluralize : String -> String -> Int -> String
-pluralize singular plural count =
-  if count == 1 then
-    singular
-  else
-    plural
+panMap : Map -> Float -> Float -> Map
+panMap map dlat dlng =
+  { map | latitude = map.latitude + dlat, longitude = map.longitude + dlng }
 
 view model =
-  let
-    extender = pluralize "thing" "things" model.value
-    caption = toString model.value ++ " " ++ extender
-  in
-    div []
-      [ valueButton "-" (Decrement 10) (model.value <= model.min)
-      , div [] [ text caption ]
-      , valueButton "+" (Increment 2) (model.value >= model.max)
-      ]
+  div []
+    [ button [ onClick (PanMap 0.05 0.00) ] [ text "Pan Up"]
+    , button [ onClick (PanMap 0.00 0.05) ] [ text "Pan Right"]
+    , button [ onClick (PanMap 0.00 -0.05) ] [ text "Pan Left"]
+    , button [ onClick (PanMap -0.05 0.00) ] [ text "Pan Down"]
+    , div [id "map" ] []
+    ]
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Increment quantity ->
+    PanMap dlat dlng ->
       let
-        newValue = Basics.min model.max (model.value + quantity)
-      in
-        ( { model | value = newValue }, value newValue )
-
-    Decrement quantity ->
-      let
-        newValue = Basics.max model.min (model.value - quantity)
-      in
-        ( { model | value = newValue }, value newValue )
-
-port suggestions : (Int -> msg) -> Sub msg
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-  suggestions Decrement
+        map = model.map
+        newMap = panMap map dlat dlng
+      in 
+        ( { model | map = newMap }, mapData newMap )
