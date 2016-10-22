@@ -17,21 +17,17 @@
         var map;
 
         var mainDiv = document.getElementById("elm-app")
-        var app = Elm.Clicker.embed(mainDiv);
+        var app = Elm.App.embed(mainDiv);
 
         app.ports.mapData.subscribe(function(mapData) {
-          console.log(mapData);
-          var newMapCenter = new google.maps.LatLng(mapData.latitude, mapData.longitude);
-          map.setCenter(newMapCenter);
-        });
-
-        app.ports.value.subscribe(function(value) {
-          console.log("Result: " + value);
+          if (map != undefined) {
+            map.setCenter(mapData);
+          }
         });
 
         function initMap() {
           map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: 48.869317, lng: 2.3},
+            center: {lat: 48.869317, lng: 2.30},
             zoom: 8
           });
         }
