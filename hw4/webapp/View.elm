@@ -1,16 +1,20 @@
 module View exposing (rootView)
 
-import Html exposing (div, button, text)
+import Html exposing (div, button, text, h3)
 import Html.Events exposing (onClick)
-import Html.Attributes exposing (id)
+import Html.Attributes exposing (id, class)
 
 import Types exposing (..)
 
+panButton dlat dlng caption =
+  button [ onClick (PanMap dlat dlng), class "btn col s3 waves-effect green white-text" ] [ text caption ]
+
 rootView model =
-  div []
-    [ button [ onClick (PanMap 0.05 0.00) ] [ text "Pan Up" ]
-    , button [ onClick (PanMap 0.00 0.05) ] [ text "Pan Right" ]
-    , button [ onClick (PanMap 0.00 -0.05) ] [ text "Pan Left" ]
-    , button [ onClick (PanMap -0.05 0.00) ] [ text "Pan Down" ]
+  div [ class "container row" ]
+    [ h3 [ class "center" ] [ text "Drone Job Delivery" ]
     , div [id "map" ] []
+    , panButton 0.05 0.00 "Pan Up"
+    , panButton -0.05 0.00 "Pan Down"
+    , panButton 0.00 -0.05 "Pan Left"
+    , panButton 0.00 0.05 "Pan Right"
     ]

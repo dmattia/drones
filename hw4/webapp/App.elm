@@ -10,6 +10,6 @@ main =
     Html.App.program
         { init = State.initialState
         , update = State.update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = State.subscriptions
         , view = View.rootView
         }
