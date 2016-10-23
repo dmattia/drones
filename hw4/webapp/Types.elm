@@ -13,11 +13,18 @@ type alias ChargingStation =
   }
 
 type alias Model =
-  { map : Location,
-    chargingStations : List ChargingStation
+  { map : Location
+  , chargingStations : List ChargingStation
+  , drones : List Drone
+  , mapReady : Bool
   }
 
 type alias Location =
   { lat : Float
   , lng : Float
+  }
+
+type alias Drone =
+  { id : String
+  , location: Location
   }

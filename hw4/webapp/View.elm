@@ -13,8 +13,8 @@ rootView model =
   div [ class "container row" ]
     [ h3 [ class "center" ] [ text "Drone Job Delivery" ]
     , div [id "map" ] []
-    , panButton 0.05 0.00 "Pan Up"
-    , panButton -0.05 0.00 "Pan Down"
-    , panButton 0.00 -0.05 "Pan Left"
-    , panButton 0.00 0.05 "Pan Right"
+    , panButton 0.01 0.00 "Pan Up"
+    , panButton -0.01 0.00 "Pan Down"
+    , panButton 0.00 -0.01 "Pan Left"
+    , panButton 0.00 0.01 "Pan Right"
     ]

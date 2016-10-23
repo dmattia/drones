@@ -16,27 +16,66 @@
 
       <script>
         var map;
+        var drones = {};
 
         var mainDiv = document.getElementById("elm-app")
         var app = Elm.App.embed(mainDiv);
 
         app.ports.mapData.subscribe(function(mapData) {
-          if (map != undefined) {
-            console.log(mapData);
-            map.setCenter(mapData);
-          }
+          console.log(mapData);
+          map.setCenter(mapData);
+        });
+
+        app.ports.drones.subscribe(function(dronesData) {
+          $.each(dronesData, function(index, droneData) {
+            if (droneData.id in drones) {
+              drones[droneData.id].setPosition(droneData.location);  
+            } else {
+              var marker = new google.maps.Marker({
+                position: droneData.location,
+                title: droneData.id
+              });
+              marker.setMap(map);
+            }
+          });
         });
 
         app.ports.chargingData.subscribe(function(chargeData) {
-          console.log(chargeData);
+          $.each(chargeData, function(index, chargeStation) {
+            var marker = new google.maps.Marker({
+              position: chargeStation.location,
+              icon: "https://apkplz.com/storage/images/com/lionmobi/battery/60/power-battery-battery-saver.png",
+              title: chargeStation.name
+            });
+            marker.setMap(map);
+            var infoWindow = new google.maps.InfoWindow({
+              content: "Charging Station: " + chargeStation.name
+            });
+            google.maps.event.addListener(marker, 'click', function() {
+              infoWindow.open(map, marker);
+            });
+          });
         });
 
         function initMap() {
-          map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: 48.869317, lng: 2.30},
-            zoom: 8
+          whenElementWithIdExists("map", function(element) {
+            map = new google.maps.Map(element, {
+              center: {lat: 48.869317, lng: 2.30},
+              zoom: 13
+            });
+            app.ports.isReady.send(true);
           });
-          app.ports.isReady.send(true);
+        }
+
+        function whenElementWithIdExists(id, onCompletion) {
+          var element = document.getElementById(id);
+          if (element != undefined) {
+            onCompletion(element);
+          } else {
+            setTimeout(function() {
+              whenElementWithIdExists(id, onCompletion)
+            }, 200);
+          }
         }
       </script>
       <script   src="https://code.jquery.com/jquery-2.2.4.js"   integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="   crossorigin="anonymous"></script>
