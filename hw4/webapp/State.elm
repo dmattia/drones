@@ -21,28 +21,28 @@ model =
     , {location = { lat = 48.864446, lng = 2.325283}, name = "Jardin des Tuileries"}
     ]
   , drones = 
-    [ Drone "1" (Location 48.858093 2.296604)
-    , Drone "2" (Location 48.858093 2.296604)
-    , Drone "3" (Location 48.858093 2.296604)
-    , Drone "4" (Location 48.858093 2.296604)
-    , Drone "5" (Location 48.858093 2.296604)
-    , Drone "6" (Location 48.846185 2.346708)
-    , Drone "7" (Location 48.846185 2.346708)
-    , Drone "8" (Location 48.846185 2.346708)
-    , Drone "9" (Location 48.846185 2.346708)
-    , Drone "10" (Location 48.846185 2.346708)
+    [ Drone "1" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
+    , Drone "2" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
+    , Drone "3" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
+    , Drone "4" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
+    , Drone "5" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
+    , Drone "6" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
+    , Drone "7" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
+    , Drone "8" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
+    , Drone "9" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
+    , Drone "10" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
     ]
   , mapReady = False
   , jobs = []
   , time = 0
   , startTime = 0
-  , speedup = 20
+  , speedup = 50
   }
 
 startMap : Location
 startMap =
-  { lat = 48.869317
-  , lng = 2.30
+  { lat = 48.8547673498851
+  , lng = 2.336649703979452
   }
 
 panMap : Location -> Float -> Float -> Location
@@ -71,7 +71,7 @@ update msg model =
     Tick time ->
       if model.mapReady then
         let
-          updatedDrones = updateDrones model.drones model.chargingStations
+          updatedDrones = updateDrones model.drones model.jobs model.chargingStations
         in
           ( { model | drones = updatedDrones, time = time }, drones updatedDrones )
       else
@@ -83,18 +83,52 @@ update msg model =
     FetchFail _ ->
       ( model, Cmd.none)
 
-updateDrones : List Drone -> List ChargingStation -> List Drone
-updateDrones drones chargingStations =
+updateDrones : List Drone -> List Job -> List ChargingStation -> List Drone
+updateDrones drones jobs chargingStations =
   case drones of
     [] ->
       []
     drone::remaining ->
-      [updateDrone drone chargingStations] ++ (updateDrones remaining chargingStations)
+      let
+        updatedDrone = updateDrone drone jobs chargingStations
+      in
+        [updatedDrone] ++ (updateDrones remaining jobs chargingStations)
 
-updateDrone : Drone -> List ChargingStation -> Drone
-updateDrone drone chargingStations =
-  --{ drone | location = (Location (drone.location.lat + 0.001) drone.location.lng) }
-  { drone | location = moveTowards drone.location startMap 20 }
+updateDrone : Drone -> List Job -> List ChargingStation -> Drone
+updateDrone drone jobs chargingStations =
+  case drone.status of
+    "Charging" ->
+      { drone | status = "Grounded", charge = 25 }
+    "TakingOff" ->
+      { drone | status = "ToStart", charge = drone.charge - 0.5 }
+    "Grounded" ->
+      case (List.head jobs) of
+        Just job ->
+          { drone | status = "TakingOff", currentJob = job }
+        Nothing ->
+          { drone | status = "Idle" }
+    "ToStart" ->
+      if (drone.location == drone.currentJob.start) then
+        { drone | status = "ToEnd" }
+      else 
+        { drone 
+          | location = moveTowards drone.location drone.currentJob.start 20
+          , charge = drone.charge - 0.01 
+        }
+    "ToEnd" ->
+      if (drone.location == drone.currentJob.end) then
+        { drone | status = "Idle" }
+      else
+        { drone 
+          | location = moveTowards drone.location drone.currentJob.end 20
+          , charge = drone.charge - 0.01 
+        }
+    "Landing" ->
+      { drone | status = "grounded" }
+    "Idle" ->
+      drone
+    _ ->
+      { drone | status = "Charging" }
 
 moveTowards : Location -> Location -> Float -> Location
 moveTowards start end meters =

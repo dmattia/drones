@@ -40,5 +40,8 @@ type alias Job =
 
 type alias Drone =
   { id : String
-  , location: Location
+  , location : Location
+  , status : String
+  , currentJob : Job
+  , charge : Float
   }

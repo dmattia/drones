@@ -14,6 +14,11 @@ jobView : Job -> Html.Html Msg
 jobView job =
   div [] [ text (toString job) ]
 
+droneView : Drone -> Html.Html Msg
+droneView drone =
+  div [] [ text (toString drone) ]
+
+getTimeElapsedString : Model -> String
 getTimeElapsedString model =
   toString (floor ( model.speedup * (model.time - model.startTime) / 1000))
 
@@ -28,6 +33,10 @@ rootView model =
     , panButton -0.01 0.00 "Pan Down"
     , panButton 0.00 -0.01 "Pan Left"
     , panButton 0.00 0.01 "Pan Right"
+    , div [] 
+      [ h3 [ class "center" ] [ text "Drones" ]
+      , div [] ( List.map droneView model.drones )
+      ]
     , div [] 
       [ h3 [ class "center" ] [ text "Remaining Jobs" ]
       , div [] ( List.map jobView model.jobs )

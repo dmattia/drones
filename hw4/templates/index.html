@@ -15,6 +15,7 @@
       <script>
         var map;
         var drones = {};
+        var jobs = {};
 
         var mainDiv = document.getElementById("elm-app")
         var app = Elm.App.embed(mainDiv);
@@ -60,14 +61,28 @@
         function initMap() {
           whenElementWithIdExists("map", function(element) {
             map = new google.maps.Map(element, {
-              center: {lat: 48.869317, lng: 2.30},
+              center: {lat: 48.8547673498851, lng: 2.336649703},
               zoom: 13
             });
             app.ports.isReady.send(true);
             $.getJSON("/jobs", function(result) {
               app.ports.jobs.send(result.items);
+              result.items.map(drawJob);
             });
           });
+        }
+
+        function drawJob(job) {
+          var path = [job.start, job.end]
+          var jobLine = new google.maps.Polyline({
+            path: path,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+          });
+          jobLine.setMap(map);
+          jobs[job.id] = jobLine;
         }
 
         function whenElementWithIdExists(id, onCompletion) {
