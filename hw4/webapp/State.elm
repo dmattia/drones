@@ -75,6 +75,7 @@ update msg model =
         in
           ( { model | drones = updatedDrones, time = time }, drones updatedDrones )
       else
+        -- TODO: Make startTime set even if this branch never runs
         ( { model | time = time, startTime = time }, Cmd.none )
 
     FetchSucceed newJobs ->
@@ -82,6 +83,21 @@ update msg model =
 
     FetchFail _ ->
       ( model, Cmd.none)
+
+sortByMinimumCosts : Drone -> List ChargingStation -> List Job -> List Job
+sortByMinimumCosts drone chargingStations jobs =
+  case jobs of
+    [] ->
+        []
+    pivot :: rest ->
+        let
+          cost = calculateMinimumCost drone chargingStations
+          lower  = List.filter (\job -> (cost job) <= (cost pivot)) rest
+          higher  = List.filter (\job -> (cost job) > (cost pivot)) rest
+        in
+             (sortByMinimumCosts drone chargingStations lower)
+          ++ [pivot]
+          ++ (sortByMinimumCosts drone chargingStations higher)
 
 updateDrones : List Drone -> List Job -> List ChargingStation -> List Drone
 updateDrones drones jobs chargingStations =
@@ -94,6 +110,29 @@ updateDrones drones jobs chargingStations =
       in
         [updatedDrone] ++ (updateDrones remaining jobs chargingStations)
 
+calculateMinimumCost : Drone -> List ChargingStation -> Job -> Float
+calculateMinimumCost drone chargingStations job =
+  -- Finds the cost of a given drone doing a job and then going to the closest charging station
+  let
+    toJob = distanceBetween drone.location job.start
+    jobDistance = distanceBetween job.start job.end
+    chargeLocations = List.map .location chargingStations
+    distancesToChargingStations = List.map (distanceBetween job.end) chargeLocations
+    costPerMeter = 0.001
+  in
+    case (List.minimum distancesToChargingStations) of
+      Just jobToChargingStation ->
+        ( toJob + jobDistance + jobToChargingStation ) * 0.001
+      Nothing ->  
+        Debug.crash "You must give a valid list of charging stations"
+
+findJob : Drone -> List Job -> List ChargingStation -> Maybe Job
+findJob drone jobs chargingStations =
+  let
+    sortedJobs = sortByMinimumCosts drone chargingStations jobs
+  in
+    List.head sortedJobs
+
 updateDrone : Drone -> List Job -> List ChargingStation -> Drone
 updateDrone drone jobs chargingStations =
   case drone.status of
@@ -102,7 +141,7 @@ updateDrone drone jobs chargingStations =
     "TakingOff" ->
       { drone | status = "ToStart", charge = drone.charge - 0.5 }
     "Grounded" ->
-      case (List.head jobs) of
+      case ( findJob drone jobs chargingStations ) of
         Just job ->
           { drone | status = "TakingOff", currentJob = job }
         Nothing ->
@@ -113,7 +152,7 @@ updateDrone drone jobs chargingStations =
       else 
         { drone 
           | location = moveTowards drone.location drone.currentJob.start 20
-          , charge = drone.charge - 0.01 
+          , charge = drone.charge - 0.02 
         }
     "ToEnd" ->
       if (drone.location == drone.currentJob.end) then
@@ -121,7 +160,7 @@ updateDrone drone jobs chargingStations =
       else
         { drone 
           | location = moveTowards drone.location drone.currentJob.end 20
-          , charge = drone.charge - 0.01 
+          , charge = drone.charge - 0.02 
         }
     "Landing" ->
       { drone | status = "grounded" }

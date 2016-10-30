@@ -29,6 +29,12 @@
           $.each(dronesData, function(index, droneData) {
             if (droneData.id in drones) {
               drones[droneData.id].setPosition(droneData.location);  
+              if(droneData.status == "TakingOff") {
+                jobs[droneData.currentJob.id].setOptions({strokeColor: "#2196f3"}); 
+              }
+              if(droneData.status == "Idle") {
+                jobs[droneData.currentJob.id].setMap(null);
+              }
             } else {
               console.log("Adding new marker")
               var marker = new google.maps.Marker({
@@ -77,7 +83,7 @@
           var jobLine = new google.maps.Polyline({
             path: path,
             geodesic: true,
-            strokeColor: '#FF0000',
+            strokeColor: '#f44336',
             strokeOpacity: 1.0,
             strokeWeight: 2
           });
