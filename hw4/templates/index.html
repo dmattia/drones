@@ -3,10 +3,8 @@
     <head>
         <meta charset="utf-8">
         <title>Drone Jobs</title>
-        <!--<script src="../webapp/elm.js"></script>-->
         <script src="{{ url_for('static', filename='elm.js') }}"></script>
 
-        <!--<link rel="stylesheet" href="../webapp/style.css">-->
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
     </head>
@@ -66,6 +64,9 @@
               zoom: 13
             });
             app.ports.isReady.send(true);
+            $.getJSON("/jobs", function(result) {
+              app.ports.jobs.send(result.items);
+            });
           });
         }
 

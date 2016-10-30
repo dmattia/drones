@@ -33,6 +33,10 @@ model =
     , Drone "10" (Location 48.846185 2.346708)
     ]
   , mapReady = False
+  , jobs = []
+  , time = 0
+  , startTime = 0
+  , speedup = 20
   }
 
 startMap : Location
@@ -61,14 +65,23 @@ update msg model =
     Ready isReady ->
       ( { model | mapReady = isReady }, chargingData model.chargingStations )
 
+    NewJobs newJobs ->
+      ( { model | jobs = newJobs }, Cmd.none )
+
     Tick time ->
       if model.mapReady then
         let
           updatedDrones = updateDrones model.drones model.chargingStations
         in
-          ( { model | drones = updatedDrones }, drones updatedDrones )
+          ( { model | drones = updatedDrones, time = time }, drones updatedDrones )
       else
-        ( model, Cmd.none )
+        ( { model | time = time, startTime = time }, Cmd.none )
+
+    FetchSucceed newJobs ->
+      ( { model | jobs = newJobs }, Cmd.none )
+
+    FetchFail _ ->
+      ( model, Cmd.none)
 
 updateDrones : List Drone -> List ChargingStation -> List Drone
 updateDrones drones chargingStations =
@@ -80,16 +93,39 @@ updateDrones drones chargingStations =
 
 updateDrone : Drone -> List ChargingStation -> Drone
 updateDrone drone chargingStations =
-  { drone | location = (Location (drone.location.lat + 0.001) drone.location.lng) }
+  --{ drone | location = (Location (drone.location.lat + 0.001) drone.location.lng) }
+  { drone | location = moveTowards drone.location startMap 20 }
+
+moveTowards : Location -> Location -> Float -> Location
+moveTowards start end meters =
+  let
+    distance = distanceBetween start end
+    dlat = end.lat - start.lat
+    dlng = end.lng - start.lng
+  in
+    if (meters >= distance) then
+      end
+    else
+      Location (start.lat + ( meters / distance * dlat )) ( start.lng + ( meters / distance * dlng ) )
+
+distanceBetween : Location -> Location -> Float
+distanceBetween start end =
+  let
+    dlat = end.lat - start.lat
+    dlng = end.lng - start.lng
+  in
+    ( sqrt ((dlat * dlat) + (dlng * dlng)) ) * 111319.5
 
 -- Subscriptions
 
 port isReady : ( Bool -> msg ) -> Sub msg
+port jobs : ( List Job -> msg ) -> Sub msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-    [ Time.every ( second / 1 ) Tick
+    [ Time.every ( second / model.speedup ) Tick
     , isReady Ready
+    , jobs NewJobs
     ]
 

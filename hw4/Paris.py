@@ -33,6 +33,12 @@ class deliveryRequest:
         }
     def getJobID(self):
         return self.jobID
+    def getJson(self):
+        return {
+              "id": self.getJobID(),
+              "start": self.getStart(),
+              "end": self.getEnd(),
+        }
 
 
 #***********************************************************************************************************************
@@ -65,6 +71,7 @@ def generateCoordinate():
 #*********************************
 def getJson():
   deliveryJobs = [deliveryRequest(x) for x in range(0, 100)]
+  """
   jobDict = {}
   for job in deliveryJobs:
     jobDict["Job" + str(job.getJobID())] = {
@@ -73,6 +80,8 @@ def getJson():
       "end": job.getEnd(),
     }
   return jobDict
+  """
+  return {"items" : map(lambda x: x.getJson(), deliveryJobs)}
 
 if __name__ == "__main__":
   print(getJson())
