@@ -12,6 +12,7 @@ initialState : (Model, Cmd Msg)
 initialState =
   ( model, Cmd.none )
 
+model : Model
 model =
   { map = startMap
   , chargingStations =
@@ -34,11 +35,13 @@ model =
   , mapReady = False
   }
 
+startMap : Location
 startMap =
   { lat = 48.869317
   , lng = 2.30
   }
 
+panMap : Location -> Float -> Float -> Location
 panMap map dlat dlng =
   { map | lat = map.lat + dlat, lng = map.lng + dlng }
 
@@ -48,7 +51,7 @@ update msg model =
     PanMap dlat dlng ->
       let
         map = model.map
-        newMap = panMap map dlat dlng
+        newMap = panMap model.map dlat dlng
       in
         if model.mapReady then
           ( { model | map = newMap }, mapData newMap )
@@ -60,9 +63,24 @@ update msg model =
 
     Tick time ->
       if model.mapReady then
-        ( model, drones model.drones )
+        let
+          updatedDrones = updateDrones model.drones model.chargingStations
+        in
+          ( { model | drones = updatedDrones }, drones updatedDrones )
       else
         ( model, Cmd.none )
+
+updateDrones : List Drone -> List ChargingStation -> List Drone
+updateDrones drones chargingStations =
+  case drones of
+    [] ->
+      []
+    drone::remaining ->
+      [updateDrone drone chargingStations] ++ (updateDrones remaining chargingStations)
+
+updateDrone : Drone -> List ChargingStation -> Drone
+updateDrone drone chargingStations =
+  { drone | location = (Location (drone.location.lat + 0.001) drone.location.lng) }
 
 -- Subscriptions
 

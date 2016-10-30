@@ -6,9 +6,11 @@ import Html.Attributes exposing (id, class)
 
 import Types exposing (..)
 
+panButton : Float -> Float -> String -> Html.Html Msg
 panButton dlat dlng caption =
   button [ onClick (PanMap dlat dlng), class "btn col s3 waves-effect green white-text" ] [ text caption ]
 
+rootView : Model -> Html.Html Msg
 rootView model =
   div [ class "container row" ]
     [ h3 [ class "center" ] [ text "Drone Job Delivery" ]

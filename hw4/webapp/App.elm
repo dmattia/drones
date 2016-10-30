@@ -3,7 +3,6 @@ port module App exposing (main)
 import Html.App
 import State
 import View
-import Types
 
 main : Program Never
 main =
