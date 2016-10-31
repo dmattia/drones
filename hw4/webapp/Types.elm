@@ -1,14 +1,11 @@
 module Types exposing (..)
 
 import Time exposing (Time)
-import Http
 
 type Msg
   = PanMap Float Float
   | Tick Time
   | Ready Bool
-  | FetchSucceed (List Job)
-  | FetchFail Http.Error
   | NewJobs (List Job)
 
 type alias ChargingStation =

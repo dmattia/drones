@@ -72,17 +72,11 @@ update msg model =
       if model.mapReady then
         let
           updatedDrones = updateDrones model.drones model.jobs model.chargingStations
+          startTime = if (model.startTime == 0) then time else model.startTime
         in
-          ( { model | drones = updatedDrones, time = time }, drones updatedDrones )
+          ( { model | drones = updatedDrones, time = time, startTime = startTime }, drones updatedDrones )
       else
-        -- TODO: Make startTime set even if this branch never runs
         ( { model | time = time, startTime = time }, Cmd.none )
-
-    FetchSucceed newJobs ->
-      ( { model | jobs = newJobs }, Cmd.none )
-
-    FetchFail _ ->
-      ( model, Cmd.none)
 
 sortByMinimumCosts : Drone -> List ChargingStation -> List Job -> List Job
 sortByMinimumCosts drone chargingStations jobs =
@@ -104,11 +98,15 @@ updateDrones drones jobs chargingStations =
   case drones of
     [] ->
       []
-    drone::remaining ->
+    drone::remainingDrones ->
       let
-        updatedDrone = updateDrone drone jobs chargingStations
+        (updatedDrone, newJob) = updateDrone drone jobs chargingStations
       in
-        [updatedDrone] ++ (updateDrones remaining jobs chargingStations)
+        case newJob of
+          Just takenJob ->
+            [updatedDrone] ++ (updateDrones remainingDrones (List.filter (\job -> job.id /= takenJob.id) jobs) chargingStations)
+          Nothing ->
+            [updatedDrone] ++ (updateDrones remainingDrones jobs chargingStations)
 
 calculateMinimumCost : Drone -> List ChargingStation -> Job -> Float
 calculateMinimumCost drone chargingStations job =
@@ -133,41 +131,42 @@ findJob drone jobs chargingStations =
   in
     List.head sortedJobs
 
-updateDrone : Drone -> List Job -> List ChargingStation -> Drone
+updateDrone : Drone -> List Job -> List ChargingStation -> (Drone, Maybe Job)
 updateDrone drone jobs chargingStations =
+  -- Returns the drone after updating it, along with any new job the drone picked up
   case drone.status of
     "Charging" ->
-      { drone | status = "Grounded", charge = 25 }
+      ({ drone | status = "Grounded", charge = 25 }, Nothing)
     "TakingOff" ->
-      { drone | status = "ToStart", charge = drone.charge - 0.5 }
+      ({ drone | status = "ToStart", charge = drone.charge - 0.5 }, Nothing)
     "Grounded" ->
       case ( findJob drone jobs chargingStations ) of
         Just job ->
-          { drone | status = "TakingOff", currentJob = job }
+          ({ drone | status = "TakingOff", currentJob = job }, Just job)
         Nothing ->
-          { drone | status = "Idle" }
+          ({ drone | status = "Idle" }, Nothing)
     "ToStart" ->
       if (drone.location == drone.currentJob.start) then
-        { drone | status = "ToEnd" }
+        ({ drone | status = "ToEnd" }, Nothing)
       else 
-        { drone 
+        ({ drone 
           | location = moveTowards drone.location drone.currentJob.start 20
           , charge = drone.charge - 0.02 
-        }
+        }, Nothing)
     "ToEnd" ->
       if (drone.location == drone.currentJob.end) then
-        { drone | status = "Idle" }
+        ({ drone | status = "Idle" }, Nothing)
       else
-        { drone 
+        ({ drone 
           | location = moveTowards drone.location drone.currentJob.end 20
           , charge = drone.charge - 0.02 
-        }
+        }, Nothing)
     "Landing" ->
-      { drone | status = "grounded" }
+      ({ drone | status = "grounded" }, Nothing)
     "Idle" ->
-      drone
+      (drone, Nothing)
     _ ->
-      { drone | status = "Charging" }
+      ({ drone | status = "Idle" }, Nothing)
 
 moveTowards : Location -> Location -> Float -> Location
 moveTowards start end meters =

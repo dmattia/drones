@@ -21,7 +21,6 @@
         var app = Elm.App.embed(mainDiv);
 
         app.ports.mapData.subscribe(function(mapData) {
-          console.log(mapData);
           map.setCenter(mapData);
         });
 
@@ -33,10 +32,11 @@
                 jobs[droneData.currentJob.id].setOptions({strokeColor: "#2196f3"}); 
               }
               if(droneData.status == "Idle") {
-                jobs[droneData.currentJob.id].setMap(null);
+                if (jobs[droneData.currentJob.id] != undefined) {
+                  jobs[droneData.currentJob.id].setMap(null);
+                }
               }
             } else {
-              console.log("Adding new marker")
               var marker = new google.maps.Marker({
                 position: droneData.location,
                 title: droneData.id
