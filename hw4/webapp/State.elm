@@ -71,10 +71,10 @@ update msg model =
     Tick time ->
       if model.mapReady then
         let
-          updatedDrones = updateDrones model.drones model.jobs model.chargingStations
+          (updatedDrones, updatedJobs) = updateDrones model.drones model.jobs model.chargingStations
           startTime = if (model.startTime == 0) then time else model.startTime
         in
-          ( { model | drones = updatedDrones, time = time, startTime = startTime }, drones updatedDrones )
+          ( { model | drones = updatedDrones, time = time, startTime = startTime, jobs = updatedJobs }, drones updatedDrones )
       else
         ( { model | time = time, startTime = time }, Cmd.none )
 
@@ -93,20 +93,28 @@ sortByMinimumCosts drone chargingStations jobs =
           ++ [pivot]
           ++ (sortByMinimumCosts drone chargingStations higher)
 
-updateDrones : List Drone -> List Job -> List ChargingStation -> List Drone
+updateDrones : List Drone -> List Job -> List ChargingStation -> (List Drone, List Job)
 updateDrones drones jobs chargingStations =
+  -- Returns the updated list of drones, along with an updated list of jobs
   case drones of
     [] ->
-      []
+      ([], jobs)
     drone::remainingDrones ->
       let
         (updatedDrone, newJob) = updateDrone drone jobs chargingStations
       in
         case newJob of
           Just takenJob ->
-            [updatedDrone] ++ (updateDrones remainingDrones (List.filter (\job -> job.id /= takenJob.id) jobs) chargingStations)
+            let
+              remainingJobs = (List.filter (\job -> job.id /= takenJob.id) jobs)
+              (otherDrones, leftoverJobs) = (updateDrones remainingDrones remainingJobs chargingStations)
+            in
+              ([updatedDrone] ++ otherDrones, leftoverJobs)
           Nothing ->
-            [updatedDrone] ++ (updateDrones remainingDrones jobs chargingStations)
+            let
+              (otherDrones, leftoverJobs) = (updateDrones remainingDrones jobs chargingStations)
+            in
+              ([updatedDrone] ++ otherDrones, leftoverJobs)
 
 calculateMinimumCost : Drone -> List ChargingStation -> Job -> Float
 calculateMinimumCost drone chargingStations job =
