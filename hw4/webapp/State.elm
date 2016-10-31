@@ -36,7 +36,7 @@ model =
   , jobs = []
   , time = 0
   , startTime = 0
-  , speedup = 50
+  , speedup = 200
   }
 
 startMap : Location
@@ -86,8 +86,9 @@ sortByMinimumCosts drone chargingStations jobs =
     pivot :: rest ->
         let
           cost = calculateMinimumCost drone chargingStations
-          lower  = List.filter (\job -> (cost job) <= (cost pivot)) rest
-          higher  = List.filter (\job -> (cost job) > (cost pivot)) rest
+          (lower, higher)  = List.partition (\job -> (cost job) <= (cost pivot)) rest
+          --lower  = List.filter (\job -> (cost job) <= (cost pivot)) rest
+          --higher  = List.filter (\job -> (cost job) > (cost pivot)) rest
         in
              (sortByMinimumCosts drone chargingStations lower)
           ++ [pivot]
@@ -139,6 +140,24 @@ findJob drone jobs chargingStations =
   in
     List.head sortedJobs
 
+findNearestChargingStation : Drone -> List ChargingStation -> Maybe ChargingStation
+findNearestChargingStation drone chargingStations =
+  case chargingStations of
+    [] ->
+      Nothing
+    cs :: cs' ->
+      let
+        closestFromRest = findNearestChargingStation drone cs'
+      in
+        case closestFromRest of
+          Just chargingStation ->
+            if (distanceBetween cs.location drone.location) < (distanceBetween chargingStation.location drone.location) then
+              Just cs
+            else
+              Just chargingStation
+          Nothing ->
+            Just cs
+
 updateDrone : Drone -> List Job -> List ChargingStation -> (Drone, Maybe Job)
 updateDrone drone jobs chargingStations =
   -- Returns the drone after updating it, along with any new job the drone picked up
@@ -150,9 +169,22 @@ updateDrone drone jobs chargingStations =
     "Grounded" ->
       case ( findJob drone jobs chargingStations ) of
         Just job ->
-          ({ drone | status = "TakingOff", currentJob = job }, Just job)
+          if ((calculateMinimumCost drone chargingStations job) < drone.charge) then
+            ({ drone | status = "TakingOff", currentJob = job }, Just job)
+          else
+            -- Not enough battery to complete this job
+            ({ drone | status = "ToCharger" }, Nothing)
         Nothing ->
           ({ drone | status = "Idle" }, Nothing)
+    "ToCharger" ->
+      case (findNearestChargingStation drone chargingStations) of
+        Just chargingStation ->
+          if (drone.location == chargingStation.location) then
+            ({ drone | status = "Charging" }, Nothing)
+          else
+            ({ drone | location = moveTowards drone.location chargingStation.location 20 }, Nothing)
+        Nothing ->
+          Debug.crash "You must initialize at least one charging station"
     "ToStart" ->
       if (drone.location == drone.currentJob.start) then
         ({ drone | status = "ToEnd" }, Nothing)
@@ -172,7 +204,16 @@ updateDrone drone jobs chargingStations =
     "Landing" ->
       ({ drone | status = "grounded" }, Nothing)
     "Idle" ->
-      (drone, Nothing)
+      --(drone, Nothing)
+      case ( findJob drone jobs chargingStations ) of
+        Just job ->
+          if ((calculateMinimumCost drone chargingStations job) < drone.charge) then
+            ({ drone | status = "ToStart", currentJob = job }, Just job)
+          else
+            -- Not enough battery to complete this job
+            ({ drone | status = "ToCharger" }, Nothing)
+        Nothing ->
+          ({ drone | status = "Idle" }, Nothing)
     _ ->
       ({ drone | status = "Idle" }, Nothing)
 
