@@ -7,6 +7,8 @@ type Msg
   | Tick Time
   | Ready Bool
   | NewJobs (List Job)
+  | DecreaseSpeedup
+  | IncreaseSpeedup
 
 type alias ChargingStation =
   { name : String,

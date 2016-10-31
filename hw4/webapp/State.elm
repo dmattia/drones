@@ -36,7 +36,7 @@ model =
   , jobs = []
   , time = 0
   , startTime = 0
-  , speedup = 200
+  , speedup = 20
   }
 
 startMap : Location
@@ -77,6 +77,12 @@ update msg model =
           ( { model | drones = updatedDrones, time = time, startTime = startTime, jobs = updatedJobs }, drones updatedDrones )
       else
         ( { model | time = time, startTime = time }, Cmd.none )
+
+    DecreaseSpeedup ->
+      ( { model | speedup = model.speedup - 1 }, Cmd.none )
+
+    IncreaseSpeedup ->
+      ( { model | speedup = model.speedup + 1 }, Cmd.none )
 
 sortByMinimumCosts : Drone -> List ChargingStation -> List Job -> List Job
 sortByMinimumCosts drone chargingStations jobs =

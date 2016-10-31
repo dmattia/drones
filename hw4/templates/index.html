@@ -28,8 +28,11 @@
           $.each(dronesData, function(index, droneData) {
             if (droneData.id in drones) {
               drones[droneData.id].setPosition(droneData.location);  
-              if(droneData.status == "TakingOff") {
+              if(droneData.status == "ToStart") {
                 jobs[droneData.currentJob.id].setOptions({strokeColor: "#2196f3"}); 
+              }
+              if(droneData.status == "ToEnd") {
+                jobs[droneData.currentJob.id].setOptions({strokeColor: "#4caf50"}); 
               }
               if(droneData.status == "Idle") {
                 if (jobs[droneData.currentJob.id] != undefined) {
