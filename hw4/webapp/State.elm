@@ -233,7 +233,7 @@ updateDrone drone jobs chargingStations otherDrones =
     "Grounded" ->
       case ( findJob drone jobs chargingStations otherDrones ) of
         Just job ->
-          if ((calculateMinimumCost drone chargingStations job) < drone.charge) then
+          if ((calculateMinimumCost drone chargingStations job) < drone.charge - 5) then
             ({ drone | status = "TakingOff", currentJob = job }, Just job)
           else
             -- Not enough battery to complete this job
@@ -259,7 +259,7 @@ updateDrone drone jobs chargingStations otherDrones =
         }, Nothing)
     "ToEnd" ->
       if (drone.location == drone.currentJob.end) then
-        ({ drone | status = "Idle" }, Nothing)
+        ({ drone | status = "Idle", currentJob = Job drone.currentJob.id startMap startMap }, Nothing)
       else
         ({ drone 
           | location = moveTowards drone.location drone.currentJob.end 20
@@ -271,7 +271,7 @@ updateDrone drone jobs chargingStations otherDrones =
       --(drone, Nothing)
       case ( findJob drone jobs chargingStations otherDrones ) of
         Just job ->
-          if ((calculateMinimumCost drone chargingStations job) < drone.charge) then
+          if ((calculateMinimumCost drone chargingStations job) < drone.charge - 5) then
             ({ drone | status = "ToStart", currentJob = job }, Just job)
           else
             -- Not enough battery to complete this job
