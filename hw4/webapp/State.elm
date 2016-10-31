@@ -21,22 +21,22 @@ model =
     , {location = { lat = 48.864446, lng = 2.325283}, name = "Jardin des Tuileries"}
     ]
   , drones = 
-    [ Drone "1" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
-    , Drone "2" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
-    , Drone "3" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
-    , Drone "4" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
-    , Drone "5" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0
-    , Drone "6" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
-    , Drone "7" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
-    , Drone "8" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
-    , Drone "9" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
-    , Drone "10" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0
+    [ Drone "1" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0 0
+    , Drone "2" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0 0
+    , Drone "3" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0 0
+    , Drone "4" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0 0
+    , Drone "5" (Location 48.858093 2.296604) "Charging" (Job 0 startMap startMap) 0 0
+    , Drone "6" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0 0
+    , Drone "7" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0 0
+    , Drone "8" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0 0
+    , Drone "9" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0 0
+    , Drone "10" (Location 48.846185 2.346708) "Charging" (Job 0 startMap startMap) 0 0
     ]
   , mapReady = False
   , jobs = []
   , time = 0
   , startTime = 0
-  , speedup = 20
+  , speedup = 50
   }
 
 startMap : Location
@@ -93,8 +93,6 @@ sortByMinimumCosts drone chargingStations jobs =
         let
           cost = calculateMinimumCost drone chargingStations
           (lower, higher)  = List.partition (\job -> (cost job) <= (cost pivot)) rest
-          --lower  = List.filter (\job -> (cost job) <= (cost pivot)) rest
-          --higher  = List.filter (\job -> (cost job) > (cost pivot)) rest
         in
              (sortByMinimumCosts drone chargingStations lower)
           ++ [pivot]
@@ -108,7 +106,7 @@ updateDrones drones jobs chargingStations =
       ([], jobs)
     drone::remainingDrones ->
       let
-        (updatedDrone, newJob) = updateDrone drone jobs chargingStations
+        (updatedDrone, newJob) = updateDrone drone jobs chargingStations drones
       in
         case newJob of
           Just takenJob ->
@@ -139,12 +137,72 @@ calculateMinimumCost drone chargingStations job =
       Nothing ->  
         Debug.crash "You must give a valid list of charging stations"
 
-findJob : Drone -> List Job -> List ChargingStation -> Maybe Job
-findJob drone jobs chargingStations =
+findJob : Drone -> List Job -> List ChargingStation -> List Drone -> Maybe Job
+findJob drone jobs chargingStations otherDrones =
   let
     sortedJobs = sortByMinimumCosts drone chargingStations jobs
+    otherDronesJobs = List.map (\drone -> drone.currentJob) otherDrones
   in
-    List.head sortedJobs
+    -- Find the first drone that doesn't conflict
+    -- List.head sortedJobs
+    findFirstNonConflictingJob sortedJobs otherDronesJobs
+
+findFirstNonConflictingJob : List Job -> List Job -> Maybe Job
+findFirstNonConflictingJob sortedJobs otherJobs =
+  case sortedJobs of
+    [] ->
+      Nothing
+    job::rest ->
+      if (noConflictsBetween job otherJobs) then
+        Just job
+      else
+        findFirstNonConflictingJob rest otherJobs
+
+noConflictsBetween : Job -> List Job -> Bool
+noConflictsBetween job otherJobs =
+  case otherJobs of
+    [] ->
+      True
+    otherJob::rest ->
+      (not (jobsIntersect job otherJob)) && (noConflictsBetween job rest)
+
+jobsIntersect : Job -> Job -> Bool
+jobsIntersect job1 job2 =
+  -- Determines if two jobs intersect by checking if the intersections of their line segments
+  -- occur within both line segments
+  let
+    intersect = findIntersection job1 job2
+
+    job1LatMin = Maybe.withDefault 0 (List.minimum [job1.start.lat, job1.end.lat])
+    job1LatMax = Maybe.withDefault 0 (List.maximum [job1.start.lat, job1.end.lat])
+
+    job2LatMin = Maybe.withDefault 0 (List.minimum [job2.start.lat, job2.end.lat])
+    job2LatMax = Maybe.withDefault 0 (List.maximum [job2.start.lat, job2.end.lat])
+
+    job1LngMin = Maybe.withDefault 0 (List.minimum [job1.start.lng, job1.end.lng])
+    job1LngMax = Maybe.withDefault 0 (List.maximum [job1.start.lng, job1.end.lng])
+
+    job2LngMin = Maybe.withDefault 0 (List.minimum [job2.start.lng, job2.end.lng])
+    job2LngMax = Maybe.withDefault 0 (List.maximum [job2.start.lng, job2.end.lng])
+  in
+    (intersect.lat > job1LatMin && intersect.lat < job1LatMax)
+    && (intersect.lat > job2LatMin && intersect.lat < job2LatMax)
+    && (intersect.lng > job1LngMin && intersect.lng < job1LngMax)
+    && (intersect.lng > job2LngMin && intersect.lng < job2LngMax)
+
+findIntersection : Job -> Job -> Location
+findIntersection job1 job2 =
+  -- Finds the point of intersection of two lines
+  let
+    slope1 = (job1.end.lng - job1.start.lng) / (job1.end.lat - job1.start.lat)
+    slope2 = (job2.end.lng - job2.start.lng) / (job2.end.lat - job2.start.lat)
+    b1 = job1.start.lng - slope1 * job1.start.lat
+    b2 = job2.start.lng - slope2 * job2.start.lat
+    
+    lat = (b2 - b1) / (slope1 - slope2)
+    lng = slope1 * lat + b1
+  in
+    Location lat lng
 
 findNearestChargingStation : Drone -> List ChargingStation -> Maybe ChargingStation
 findNearestChargingStation drone chargingStations =
@@ -164,16 +222,16 @@ findNearestChargingStation drone chargingStations =
           Nothing ->
             Just cs
 
-updateDrone : Drone -> List Job -> List ChargingStation -> (Drone, Maybe Job)
-updateDrone drone jobs chargingStations =
+updateDrone : Drone -> List Job -> List ChargingStation -> List Drone -> (Drone, Maybe Job)
+updateDrone drone jobs chargingStations otherDrones =
   -- Returns the drone after updating it, along with any new job the drone picked up
   case drone.status of
     "Charging" ->
       ({ drone | status = "Grounded", charge = 25 }, Nothing)
     "TakingOff" ->
-      ({ drone | status = "ToStart", charge = drone.charge - 0.5 }, Nothing)
+      ({ drone | status = "ToStart", charge = drone.charge - 0.5, flightNumber = drone.flightNumber + 1 }, Nothing)
     "Grounded" ->
-      case ( findJob drone jobs chargingStations ) of
+      case ( findJob drone jobs chargingStations otherDrones ) of
         Just job ->
           if ((calculateMinimumCost drone chargingStations job) < drone.charge) then
             ({ drone | status = "TakingOff", currentJob = job }, Just job)
@@ -211,7 +269,7 @@ updateDrone drone jobs chargingStations =
       ({ drone | status = "grounded" }, Nothing)
     "Idle" ->
       --(drone, Nothing)
-      case ( findJob drone jobs chargingStations ) of
+      case ( findJob drone jobs chargingStations otherDrones ) of
         Just job ->
           if ((calculateMinimumCost drone chargingStations job) < drone.charge) then
             ({ drone | status = "ToStart", currentJob = job }, Just job)

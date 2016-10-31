@@ -43,4 +43,5 @@ type alias Drone =
   , status : String
   , currentJob : Job
   , charge : Float
+  , flightNumber : Int
   }

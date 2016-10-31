@@ -20,7 +20,10 @@ droneView drone =
 
 droneDescription : Drone -> String
 droneDescription drone =
-  "Drone " ++ (toString drone.id) ++ " is currently " ++ drone.status ++ " with charge " ++ (toString (round drone.charge))
+  "Drone " ++ (toString drone.id) 
+  ++ " is currently " ++ drone.status 
+  ++ " with charge " ++ (toString (round drone.charge))
+  ++ " on flight number " ++ (toString drone.flightNumber)
 
 getTimeElapsedString : Model -> String
 getTimeElapsedString model =
